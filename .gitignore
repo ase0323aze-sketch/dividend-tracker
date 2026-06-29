@@ -1,0 +1,9 @@
+# 個人の保有データを含むバックアップは絶対に公開しない
+haitou-backup-*.json
+*.backup.json
+backup*.json
+
+# OS / エディタ
+.DS_Store
+Thumbs.db
+.vscode/

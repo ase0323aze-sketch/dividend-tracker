@@ -1,0 +1,329 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#0f766e">
+<title>配当管理</title>
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="icon-192.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="配当管理">
+<style>
+  :root{
+    --bg:#0b1220; --card:#151f33; --card2:#1b2942; --line:#26354f;
+    --txt:#e8eef7; --sub:#9fb0c8; --accent:#22d3a6; --accent2:#0f766e;
+    --warn:#f59e0b; --danger:#ef4444; --radius:16px;
+  }
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  html,body{margin:0;background:var(--bg);color:var(--txt);
+    font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Yu Gothic UI",sans-serif;}
+  body{padding:env(safe-area-inset-top) 0 0 0;}
+  header{padding:18px 16px 10px;}
+  header h1{font-size:20px;margin:0;letter-spacing:.5px}
+  header p{margin:2px 0 0;color:var(--sub);font-size:12px}
+  main{padding:0 14px 90px;max-width:680px;margin:0 auto}
+
+  /* summary cards */
+  .stats{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:12px 0}
+  .stat{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:14px}
+  .stat .label{font-size:11px;color:var(--sub)}
+  .stat .value{font-size:22px;font-weight:700;margin-top:4px}
+  .stat .value small{font-size:12px;font-weight:500;color:var(--sub)}
+  .stat.full{grid-column:1/-1}
+  .breakdown{margin-top:6px;font-size:11px;color:var(--sub);line-height:1.5}
+  .breakdown b{color:var(--txt);font-weight:600}
+  .badge{display:inline-block;font-size:10px;padding:1px 6px;border-radius:6px;margin-left:6px;vertical-align:middle}
+  .badge.nisa{background:rgba(34,211,166,.18);color:var(--accent)}
+  .badge.tax{background:rgba(159,176,200,.15);color:var(--sub)}
+
+  /* monthly chart */
+  .chart{display:flex;align-items:flex-end;gap:4px;height:90px;margin-top:10px}
+  .bar{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;min-width:0}
+  .bar .b{width:100%;background:linear-gradient(180deg,var(--accent),var(--accent2));
+    border-radius:4px 4px 0 0;min-height:2px;transition:height .3s}
+  .bar .m{font-size:9px;color:var(--sub)}
+
+  /* tabs */
+  .tabs{display:flex;gap:6px;margin:6px 0 12px}
+  .tab{flex:1;text-align:center;padding:10px;border-radius:12px;background:var(--card);
+    border:1px solid var(--line);color:var(--sub);font-size:14px;font-weight:600}
+  .tab.active{background:var(--accent2);color:#fff;border-color:var(--accent2)}
+
+  /* list items */
+  .item{background:var(--card);border:1px solid var(--line);border-radius:14px;
+    padding:12px 14px;margin-bottom:9px}
+  .item .top{display:flex;justify-content:space-between;align-items:baseline;gap:8px}
+  .item .name{font-weight:700;font-size:15px}
+  .item .amt{font-weight:700;color:var(--accent);white-space:nowrap}
+  .item .meta{color:var(--sub);font-size:12px;margin-top:4px;display:flex;
+    justify-content:space-between;gap:8px;flex-wrap:wrap}
+  .item .del{color:var(--danger);font-size:12px;background:none;border:none;padding:2px 4px}
+  .empty{color:var(--sub);text-align:center;padding:30px 10px;font-size:13px;line-height:1.7}
+
+  /* fab + modal */
+  .fab{position:fixed;right:18px;bottom:calc(20px + env(safe-area-inset-bottom));
+    width:56px;height:56px;border-radius:50%;background:var(--accent);color:#06241c;
+    border:none;font-size:30px;font-weight:300;box-shadow:0 6px 20px rgba(34,211,166,.4);z-index:20}
+  .overlay{position:fixed;inset:0;background:rgba(0,0,0,.6);display:none;
+    align-items:flex-end;justify-content:center;z-index:30}
+  .overlay.show{display:flex}
+  .sheet{background:var(--card2);width:100%;max-width:680px;border-radius:20px 20px 0 0;
+    padding:18px 16px calc(24px + env(safe-area-inset-bottom));animation:up .25s ease}
+  @keyframes up{from{transform:translateY(40px);opacity:.6}to{transform:none;opacity:1}}
+  .sheet h2{margin:0 0 14px;font-size:17px}
+  label{display:block;font-size:12px;color:var(--sub);margin:10px 0 4px}
+  input,select{width:100%;padding:12px;border-radius:11px;border:1px solid var(--line);
+    background:var(--bg);color:var(--txt);font-size:16px}
+  .row{display:flex;gap:10px}.row>div{flex:1}
+  .actions{display:flex;gap:10px;margin-top:18px}
+  .btn{flex:1;padding:13px;border-radius:12px;border:none;font-size:15px;font-weight:700}
+  .btn.primary{background:var(--accent);color:#06241c}
+  .btn.ghost{background:var(--card);color:var(--sub);border:1px solid var(--line)}
+
+  /* data tools */
+  .tools{display:flex;gap:8px;margin-top:16px}
+  .tools button{flex:1;padding:10px;border-radius:11px;background:var(--card);
+    border:1px solid var(--line);color:var(--sub);font-size:12px}
+</style>
+</head>
+<body>
+<header>
+  <h1>💰 配当管理</h1>
+  <p id="yearLabel"></p>
+</header>
+
+<main>
+  <div class="stats">
+    <div class="stat">
+      <div class="label">年間配当見込み（税引後）</div>
+      <div class="value" id="sExpected">¥0</div>
+      <div class="breakdown" id="sBreakdown"></div>
+    </div>
+    <div class="stat">
+      <div class="label" id="sReceivedLabel">今年の受取実績</div>
+      <div class="value" id="sReceived">¥0</div>
+    </div>
+    <div class="stat full">
+      <div class="label">月別 受取実績</div>
+      <div class="chart" id="chart"></div>
+    </div>
+  </div>
+
+  <div class="tabs">
+    <div class="tab active" data-tab="holdings" onclick="switchTab('holdings')">保有銘柄</div>
+    <div class="tab" data-tab="records" onclick="switchTab('records')">受取記録</div>
+  </div>
+
+  <div id="view-holdings"></div>
+  <div id="view-records" style="display:none"></div>
+
+  <div class="tools">
+    <button onclick="exportData()">⬇ バックアップ</button>
+    <button onclick="document.getElementById('importFile').click()">⬆ 復元</button>
+    <input type="file" id="importFile" accept="application/json" style="display:none" onchange="importData(event)">
+  </div>
+</main>
+
+<button class="fab" onclick="openSheet()">＋</button>
+
+<div class="overlay" id="overlay">
+  <div class="sheet" id="sheet"></div>
+</div>
+
+<script>
+/* ---------- storage ---------- */
+const DB_KEY = 'haitou_v1';
+let db = load();
+function load(){
+  try{ return JSON.parse(localStorage.getItem(DB_KEY)) || {holdings:[],records:[]}; }
+  catch(e){ return {holdings:[],records:[]}; }
+}
+function save(){ localStorage.setItem(DB_KEY, JSON.stringify(db)); render(); }
+const yen = n => '¥' + Math.round(n).toLocaleString('ja-JP');
+const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2,6);
+
+/* ---------- state ---------- */
+let currentTab = 'holdings';
+const YEAR = new Date().getFullYear();
+document.getElementById('yearLabel').textContent = YEAR + '年';
+document.getElementById('sReceivedLabel').textContent = YEAR + '年の受取実績';
+
+/* ---------- tabs ---------- */
+function switchTab(t){
+  currentTab = t;
+  document.querySelectorAll('.tab').forEach(el=>el.classList.toggle('active', el.dataset.tab===t));
+  document.getElementById('view-holdings').style.display = t==='holdings'?'block':'none';
+  document.getElementById('view-records').style.display  = t==='records'?'block':'none';
+}
+
+/* ---------- render ---------- */
+function render(){
+  // expected annual dividend from holdings (NISA=非課税, 課税口座=源泉20.315%)
+  const TAX = 0.20315;
+  let nisaGross = 0, taxGross = 0;
+  db.holdings.forEach(h => {
+    const annual = h.shares * h.dps;
+    if (h.account === 'nisa') nisaGross += annual; else taxGross += annual;
+  });
+  const afterTax = nisaGross + taxGross * (1 - TAX);
+  document.getElementById('sExpected').innerHTML = yen(afterTax);
+  document.getElementById('sBreakdown').innerHTML =
+    `NISA非課税 <b>${yen(nisaGross)}</b><br>` +
+    `課税口座 ${yen(taxGross)} → 手取り <b>${yen(taxGross*(1-TAX))}</b>`;
+
+  // received this year
+  const thisYear = db.records.filter(r => r.date && r.date.startsWith(YEAR+''));
+  const received = thisYear.reduce((s,r)=> s + r.amount, 0);
+  document.getElementById('sReceived').innerHTML = yen(received);
+
+  // monthly chart
+  const months = Array(12).fill(0);
+  thisYear.forEach(r => { const m = +r.date.slice(5,7)-1; if(m>=0&&m<12) months[m]+=r.amount; });
+  const max = Math.max(...months, 1);
+  document.getElementById('chart').innerHTML = months.map((v,i)=>
+    `<div class="bar" title="${i+1}月 ${yen(v)}">
+       <div class="b" style="height:${v/max*100}%"></div>
+       <div class="m">${i+1}</div>
+     </div>`).join('');
+
+  // holdings list
+  const hv = document.getElementById('view-holdings');
+  if(!db.holdings.length){
+    hv.innerHTML = `<div class="empty">保有している銘柄を登録しましょう。<br>右下の ＋ から「保有銘柄」を追加すると、年間配当見込みが自動計算されます。</div>`;
+  } else {
+    hv.innerHTML = db.holdings
+      .slice().sort((a,b)=> b.shares*b.dps - a.shares*a.dps)
+      .map(h=>{
+        const annual = h.shares*h.dps;
+        const yieldPct = h.price ? (h.dps/h.price*100).toFixed(2)+'%' : '—';
+        const badge = h.account==='nisa'
+          ? '<span class="badge nisa">NISA</span>'
+          : '<span class="badge tax">課税</span>';
+        return `<div class="item">
+          <div class="top">
+            <span class="name">${esc(h.name)}${badge}${h.code?` <span style="color:var(--sub);font-size:12px">${esc(h.code)}</span>`:''}</span>
+            <span class="amt">${yen(annual)}/年</span>
+          </div>
+          <div class="meta">
+            <span>${h.shares.toLocaleString()}株 × ${yen(h.dps)} ・ 利回り ${yieldPct}</span>
+            <button class="del" onclick="delHolding('${h.id}')">削除</button>
+          </div>
+        </div>`;
+      }).join('');
+  }
+
+  // records list
+  const rv = document.getElementById('view-records');
+  if(!db.records.length){
+    rv.innerHTML = `<div class="empty">配当が振り込まれたら ＋ から記録しましょう。<br>月別グラフと年間実績に反映されます。</div>`;
+  } else {
+    rv.innerHTML = db.records
+      .slice().sort((a,b)=> (b.date||'').localeCompare(a.date||''))
+      .map(r=>`<div class="item">
+        <div class="top">
+          <span class="name">${esc(r.name)}</span>
+          <span class="amt">${yen(r.amount)}</span>
+        </div>
+        <div class="meta">
+          <span>${r.date||'日付なし'}</span>
+          <button class="del" onclick="delRecord('${r.id}')">削除</button>
+        </div>
+      </div>`).join('');
+  }
+}
+const esc = s => String(s).replace(/[&<>"]/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+
+/* ---------- add/delete ---------- */
+function delHolding(id){ if(confirm('この銘柄を削除しますか？')){ db.holdings=db.holdings.filter(h=>h.id!==id); save(); } }
+function delRecord(id){ if(confirm('この記録を削除しますか？')){ db.records=db.records.filter(r=>r.id!==id); save(); } }
+
+/* ---------- sheet (add form) ---------- */
+function openSheet(){
+  const isHold = currentTab==='holdings';
+  const today = new Date().toISOString().slice(0,10);
+  const sheet = document.getElementById('sheet');
+  sheet.innerHTML = isHold ? `
+    <h2>保有銘柄を追加</h2>
+    <label>銘柄名 *</label>
+    <input id="f_name" placeholder="例）三菱UFJ">
+    <label>口座区分 *</label>
+    <select id="f_account">
+      <option value="nisa">NISA（非課税）</option>
+      <option value="tax">特定・一般口座（課税）</option>
+    </select>
+    <div class="row">
+      <div><label>証券コード</label><input id="f_code" inputmode="numeric" placeholder="8306"></div>
+      <div><label>保有株数 *</label><input id="f_shares" inputmode="numeric" placeholder="100"></div>
+    </div>
+    <div class="row">
+      <div><label>1株あたり年間配当 *</label><input id="f_dps" inputmode="decimal" placeholder="60"></div>
+      <div><label>現在株価（利回り計算用）</label><input id="f_price" inputmode="decimal" placeholder="1800"></div>
+    </div>
+    <div class="actions">
+      <button class="btn ghost" onclick="closeSheet()">キャンセル</button>
+      <button class="btn primary" onclick="addHolding()">追加</button>
+    </div>
+  ` : `
+    <h2>配当の受取を記録</h2>
+    <label>銘柄名 *</label>
+    <input id="f_name" list="holdNames" placeholder="例）三菱UFJ">
+    <datalist id="holdNames">${db.holdings.map(h=>`<option value="${esc(h.name)}">`).join('')}</datalist>
+    <div class="row">
+      <div><label>受取額（円）*</label><input id="f_amount" inputmode="numeric" placeholder="4800"></div>
+      <div><label>受取日 *</label><input id="f_date" type="date" value="${today}"></div>
+    </div>
+    <div class="actions">
+      <button class="btn ghost" onclick="closeSheet()">キャンセル</button>
+      <button class="btn primary" onclick="addRecord()">記録</button>
+    </div>
+  `;
+  document.getElementById('overlay').classList.add('show');
+  setTimeout(()=>document.getElementById('f_name').focus(),100);
+}
+function closeSheet(){ document.getElementById('overlay').classList.remove('show'); }
+document.getElementById('overlay').addEventListener('click', e=>{ if(e.target.id==='overlay') closeSheet(); });
+
+function addHolding(){
+  const name = val('f_name'), shares = +val('f_shares'), dps = +val('f_dps');
+  if(!name || !shares || !dps){ alert('銘柄名・株数・1株配当は必須です'); return; }
+  db.holdings.push({id:uid(), name, account:val('f_account'), code:val('f_code'), shares, dps, price:+val('f_price')||0});
+  closeSheet(); save();
+}
+function addRecord(){
+  const name = val('f_name'), amount = +val('f_amount'), date = val('f_date');
+  if(!name || !amount || !date){ alert('銘柄名・受取額・受取日は必須です'); return; }
+  db.records.push({id:uid(), name, amount, date});
+  closeSheet(); save();
+}
+const val = id => document.getElementById(id).value.trim();
+
+/* ---------- backup ---------- */
+function exportData(){
+  const blob = new Blob([JSON.stringify(db,null,2)], {type:'application/json'});
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = `haitou-backup-${new Date().toISOString().slice(0,10)}.json`;
+  a.click();
+}
+function importData(e){
+  const file = e.target.files[0]; if(!file) return;
+  const reader = new FileReader();
+  reader.onload = () => {
+    try{
+      const data = JSON.parse(reader.result);
+      if(!data.holdings || !data.records) throw 0;
+      if(confirm('現在のデータを置き換えます。よろしいですか？')){ db = data; save(); }
+    }catch(err){ alert('読み込めませんでした'); }
+    e.target.value='';
+  };
+  reader.readAsText(file);
+}
+
+/* ---------- init ---------- */
+render();
+if('serviceWorker' in navigator){ navigator.serviceWorker.register('sw.js').catch(()=>{}); }
+</script>
+</body>
+</html>
