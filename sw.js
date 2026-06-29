@@ -1,5 +1,5 @@
 // 配当管理 Service Worker — オフライン対応
-const CACHE = 'haitou-v1';
+const CACHE = 'haitou-v2';
 const ASSETS = [
   './',
   './index.html',

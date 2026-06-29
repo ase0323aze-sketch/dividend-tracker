@@ -37,6 +37,7 @@
   .badge{display:inline-block;font-size:10px;padding:1px 6px;border-radius:6px;margin-left:6px;vertical-align:middle}
   .badge.nisa{background:rgba(34,211,166,.18);color:var(--accent)}
   .badge.tax{background:rgba(159,176,200,.15);color:var(--sub)}
+  .badge.fund{background:rgba(245,158,11,.18);color:var(--warn)}
 
   /* monthly chart */
   .chart{display:flex;align-items:flex-end;gap:4px;height:90px;margin-top:10px}
@@ -46,9 +47,9 @@
   .bar .m{font-size:9px;color:var(--sub)}
 
   /* tabs */
-  .tabs{display:flex;gap:6px;margin:6px 0 12px}
-  .tab{flex:1;text-align:center;padding:10px;border-radius:12px;background:var(--card);
-    border:1px solid var(--line);color:var(--sub);font-size:14px;font-weight:600}
+  .tabs{display:flex;gap:5px;margin:6px 0 12px}
+  .tab{flex:1;text-align:center;padding:10px 4px;border-radius:11px;background:var(--card);
+    border:1px solid var(--line);color:var(--sub);font-size:13px;font-weight:600}
   .tab.active{background:var(--accent2);color:#fff;border-color:var(--accent2)}
 
   /* list items */
@@ -62,15 +63,55 @@
   .item .del{color:var(--danger);font-size:12px;background:none;border:none;padding:2px 4px}
   .empty{color:var(--sub);text-align:center;padding:30px 10px;font-size:13px;line-height:1.7}
 
+  /* schedule */
+  .sched-total{background:var(--card);border:1px solid var(--line);border-radius:14px;
+    padding:14px;margin-bottom:10px}
+  .sched-total .label{font-size:11px;color:var(--sub)}
+  .sched-total .value{font-size:22px;font-weight:700;margin-top:4px}
+  .srow{display:flex;align-items:center;gap:10px;padding:11px 14px;border-radius:12px;
+    background:var(--card);border:1px solid var(--line);margin-bottom:7px}
+  .srow.zero{opacity:.4}
+  .srow .sm{width:38px;font-weight:700;font-size:13px}
+  .srow .sbar{flex:1;height:8px;background:var(--bg);border-radius:5px;overflow:hidden}
+  .srow .sbar i{display:block;height:100%;background:linear-gradient(90deg,var(--accent2),var(--accent))}
+  .srow .sright{text-align:right;min-width:78px}
+  .srow .samt{font-weight:700;font-size:13px;color:var(--accent)}
+  .srow .sn{font-size:10px;color:var(--sub);display:block;max-width:120px;overflow:hidden;
+    text-overflow:ellipsis;white-space:nowrap}
+  .note{background:rgba(245,158,11,.12);border:1px solid rgba(245,158,11,.3);color:var(--warn);
+    border-radius:11px;padding:10px 12px;font-size:12px;margin-bottom:10px;line-height:1.5}
+
+  /* simulation */
+  .simcard{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px;margin-bottom:10px}
+  .simresult{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:10px 0}
+  .simresult .stat .value{font-size:20px}
+  .ytable{max-height:260px;overflow-y:auto;border:1px solid var(--line);border-radius:11px}
+  .ytable table{width:100%;border-collapse:collapse;font-size:12px}
+  .ytable th,.ytable td{padding:8px 10px;text-align:right;border-bottom:1px solid var(--line)}
+  .ytable th{position:sticky;top:0;background:var(--card2);color:var(--sub);font-weight:600;font-size:11px}
+  .ytable td:first-child,.ytable th:first-child{text-align:left}
+  .linkbtn{background:none;border:none;color:var(--accent);font-size:12px;padding:0;text-decoration:underline}
+
+  /* chips (payment months) */
+  .chips{display:flex;flex-wrap:wrap;gap:6px}
+  .chip{width:calc(25% - 5px);text-align:center;padding:9px 0;border:1px solid var(--line);
+    border-radius:9px;background:var(--bg);color:var(--sub);font-size:13px}
+  .chip.active{background:var(--accent2);color:#fff;border-color:var(--accent2)}
+  .presets{display:flex;gap:6px;margin-top:6px}
+  .presets button{flex:1;padding:7px;border-radius:9px;background:var(--card);border:1px solid var(--line);
+    color:var(--sub);font-size:11px}
+
   /* fab + modal */
   .fab{position:fixed;right:18px;bottom:calc(20px + env(safe-area-inset-bottom));
     width:56px;height:56px;border-radius:50%;background:var(--accent);color:#06241c;
     border:none;font-size:30px;font-weight:300;box-shadow:0 6px 20px rgba(34,211,166,.4);z-index:20}
+  .fab.hide{display:none}
   .overlay{position:fixed;inset:0;background:rgba(0,0,0,.6);display:none;
     align-items:flex-end;justify-content:center;z-index:30}
   .overlay.show{display:flex}
   .sheet{background:var(--card2);width:100%;max-width:680px;border-radius:20px 20px 0 0;
-    padding:18px 16px calc(24px + env(safe-area-inset-bottom));animation:up .25s ease}
+    padding:18px 16px calc(24px + env(safe-area-inset-bottom));animation:up .25s ease;
+    max-height:90vh;overflow-y:auto}
   @keyframes up{from{transform:translateY(40px);opacity:.6}to{transform:none;opacity:1}}
   .sheet h2{margin:0 0 14px;font-size:17px}
   label{display:block;font-size:12px;color:var(--sub);margin:10px 0 4px}
@@ -112,21 +153,25 @@
   </div>
 
   <div class="tabs">
-    <div class="tab active" data-tab="holdings" onclick="switchTab('holdings')">保有銘柄</div>
-    <div class="tab" data-tab="records" onclick="switchTab('records')">受取記録</div>
+    <div class="tab active" data-tab="holdings" onclick="switchTab('holdings')">保有</div>
+    <div class="tab" data-tab="records" onclick="switchTab('records')">受取</div>
+    <div class="tab" data-tab="schedule" onclick="switchTab('schedule')">予定</div>
+    <div class="tab" data-tab="sim" onclick="switchTab('sim')">試算</div>
   </div>
 
   <div id="view-holdings"></div>
   <div id="view-records" style="display:none"></div>
+  <div id="view-schedule" style="display:none"></div>
+  <div id="view-sim" style="display:none"></div>
 
-  <div class="tools">
+  <div class="tools" id="tools">
     <button onclick="exportData()">⬇ バックアップ</button>
     <button onclick="document.getElementById('importFile').click()">⬆ 復元</button>
     <input type="file" id="importFile" accept="application/json" style="display:none" onchange="importData(event)">
   </div>
 </main>
 
-<button class="fab" onclick="openSheet()">＋</button>
+<button class="fab" id="fab" onclick="openSheet()">＋</button>
 
 <div class="overlay" id="overlay">
   <div class="sheet" id="sheet"></div>
@@ -135,6 +180,7 @@
 <script>
 /* ---------- storage ---------- */
 const DB_KEY = 'haitou_v1';
+const TAX = 0.20315;            // 上場株式等の源泉徴収率
 let db = load();
 function load(){
   try{ return JSON.parse(localStorage.getItem(DB_KEY)) || {holdings:[],records:[]}; }
@@ -144,8 +190,14 @@ function save(){ localStorage.setItem(DB_KEY, JSON.stringify(db)); render(); }
 const yen = n => '¥' + Math.round(n).toLocaleString('ja-JP');
 const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2,6);
 
+/* ---------- per-holding helpers (株式 / 投資信託 共通) ---------- */
+const annualGross = h => h.assetType==='fund' ? (+h.annualDist||0) : (+h.shares||0)*(+h.dps||0);
+const valueOf     = h => h.assetType==='fund' ? (+h.value||0)      : (+h.shares||0)*(+h.price||0);
+const afterTax    = h => h.account==='nisa' ? annualGross(h) : annualGross(h)*(1-TAX);
+
 /* ---------- state ---------- */
 let currentTab = 'holdings';
+let formMonths = new Set();     // 追加フォームで選択中の支払月
 const YEAR = new Date().getFullYear();
 document.getElementById('yearLabel').textContent = YEAR + '年';
 document.getElementById('sReceivedLabel').textContent = YEAR + '年の受取実績';
@@ -154,113 +206,198 @@ document.getElementById('sReceivedLabel').textContent = YEAR + '年の受取実�
 function switchTab(t){
   currentTab = t;
   document.querySelectorAll('.tab').forEach(el=>el.classList.toggle('active', el.dataset.tab===t));
-  document.getElementById('view-holdings').style.display = t==='holdings'?'block':'none';
-  document.getElementById('view-records').style.display  = t==='records'?'block':'none';
+  ['holdings','records','schedule','sim'].forEach(v=>{
+    document.getElementById('view-'+v).style.display = v===t?'block':'none';
+  });
+  // FAB は保有/受取タブのみ（予定・試算は追加対象がない）
+  document.getElementById('fab').classList.toggle('hide', !(t==='holdings'||t==='records'));
+  document.getElementById('tools').style.display = (t==='sim')?'none':'flex';
 }
 
 /* ---------- render ---------- */
 function render(){
-  // expected annual dividend from holdings (NISA=非課税, 課税口座=源泉20.315%)
-  const TAX = 0.20315;
+  // ---- 年間見込み（税引後）----
   let nisaGross = 0, taxGross = 0;
   db.holdings.forEach(h => {
-    const annual = h.shares * h.dps;
-    if (h.account === 'nisa') nisaGross += annual; else taxGross += annual;
+    if (h.account === 'nisa') nisaGross += annualGross(h); else taxGross += annualGross(h);
   });
-  const afterTax = nisaGross + taxGross * (1 - TAX);
-  document.getElementById('sExpected').innerHTML = yen(afterTax);
+  document.getElementById('sExpected').innerHTML = yen(nisaGross + taxGross*(1-TAX));
   document.getElementById('sBreakdown').innerHTML =
     `NISA非課税 <b>${yen(nisaGross)}</b><br>` +
     `課税口座 ${yen(taxGross)} → 手取り <b>${yen(taxGross*(1-TAX))}</b>`;
 
-  // received this year
+  // ---- 今年の受取実績 ----
   const thisYear = db.records.filter(r => r.date && r.date.startsWith(YEAR+''));
-  const received = thisYear.reduce((s,r)=> s + r.amount, 0);
-  document.getElementById('sReceived').innerHTML = yen(received);
+  document.getElementById('sReceived').innerHTML = yen(thisYear.reduce((s,r)=>s+r.amount,0));
 
-  // monthly chart
+  // ---- 月別 実績チャート ----
   const months = Array(12).fill(0);
   thisYear.forEach(r => { const m = +r.date.slice(5,7)-1; if(m>=0&&m<12) months[m]+=r.amount; });
-  const max = Math.max(...months, 1);
+  const cmax = Math.max(...months, 1);
   document.getElementById('chart').innerHTML = months.map((v,i)=>
     `<div class="bar" title="${i+1}月 ${yen(v)}">
-       <div class="b" style="height:${v/max*100}%"></div>
+       <div class="b" style="height:${v/cmax*100}%"></div>
        <div class="m">${i+1}</div>
      </div>`).join('');
 
-  // holdings list
-  const hv = document.getElementById('view-holdings');
-  if(!db.holdings.length){
-    hv.innerHTML = `<div class="empty">保有している銘柄を登録しましょう。<br>右下の ＋ から「保有銘柄」を追加すると、年間配当見込みが自動計算されます。</div>`;
-  } else {
-    hv.innerHTML = db.holdings
-      .slice().sort((a,b)=> b.shares*b.dps - a.shares*a.dps)
-      .map(h=>{
-        const annual = h.shares*h.dps;
-        const yieldPct = h.price ? (h.dps/h.price*100).toFixed(2)+'%' : '—';
-        const badge = h.account==='nisa'
-          ? '<span class="badge nisa">NISA</span>'
-          : '<span class="badge tax">課税</span>';
-        return `<div class="item">
-          <div class="top">
-            <span class="name">${esc(h.name)}${badge}${h.code?` <span style="color:var(--sub);font-size:12px">${esc(h.code)}</span>`:''}</span>
-            <span class="amt">${yen(annual)}/年</span>
-          </div>
-          <div class="meta">
-            <span>${h.shares.toLocaleString()}株 × ${yen(h.dps)} ・ 利回り ${yieldPct}</span>
-            <button class="del" onclick="delHolding('${h.id}')">削除</button>
-          </div>
-        </div>`;
-      }).join('');
-  }
-
-  // records list
-  const rv = document.getElementById('view-records');
-  if(!db.records.length){
-    rv.innerHTML = `<div class="empty">配当が振り込まれたら ＋ から記録しましょう。<br>月別グラフと年間実績に反映されます。</div>`;
-  } else {
-    rv.innerHTML = db.records
-      .slice().sort((a,b)=> (b.date||'').localeCompare(a.date||''))
-      .map(r=>`<div class="item">
-        <div class="top">
-          <span class="name">${esc(r.name)}</span>
-          <span class="amt">${yen(r.amount)}</span>
-        </div>
-        <div class="meta">
-          <span>${r.date||'日付なし'}</span>
-          <button class="del" onclick="delRecord('${r.id}')">削除</button>
-        </div>
-      </div>`).join('');
-  }
+  renderHoldings();
+  renderRecords();
+  renderSchedule();
 }
 const esc = s => String(s).replace(/[&<>"]/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 
+function renderHoldings(){
+  const hv = document.getElementById('view-holdings');
+  if(!db.holdings.length){
+    hv.innerHTML = `<div class="empty">保有している資産を登録しましょう。<br>右下の ＋ から株式・投資信託（UFJのファンド等）を追加できます。</div>`;
+    return;
+  }
+  hv.innerHTML = db.holdings.slice().sort((a,b)=> annualGross(b)-annualGross(a)).map(h=>{
+    const annual = annualGross(h), v = valueOf(h);
+    const yieldPct = v ? (annual/v*100).toFixed(2)+'%' : '—';
+    const accBadge = h.account==='nisa'
+      ? '<span class="badge nisa">NISA</span>' : '<span class="badge tax">課税</span>';
+    const typeBadge = h.assetType==='fund' ? '<span class="badge fund">投信</span>' : '';
+    const detail = h.assetType==='fund'
+      ? `評価額 ${yen(v)} ・ 利回り ${yieldPct}`
+      : `${(+h.shares).toLocaleString()}株 × ${yen(h.dps)} ・ 利回り ${yieldPct}`;
+    const pm = (h.payMonths&&h.payMonths.length)
+      ? h.payMonths.slice().sort((a,b)=>a-b).join('・')+'月'
+      : '<span style="color:var(--warn)">支払月 未設定</span>';
+    return `<div class="item">
+      <div class="top">
+        <span class="name">${esc(h.name)}${accBadge}${typeBadge}${h.code?` <span style="color:var(--sub);font-size:12px">${esc(h.code)}</span>`:''}</span>
+        <span class="amt">${yen(annual)}/年</span>
+      </div>
+      <div class="meta"><span>${detail}</span><span>${pm}</span></div>
+      <div class="meta"><span></span><button class="del" onclick="delHolding('${h.id}')">削除</button></div>
+    </div>`;
+  }).join('');
+}
+
+function renderRecords(){
+  const rv = document.getElementById('view-records');
+  if(!db.records.length){
+    rv.innerHTML = `<div class="empty">配当が振り込まれたら ＋ から記録しましょう。<br>月別グラフと年間実績に反映されます。</div>`;
+    return;
+  }
+  rv.innerHTML = db.records.slice().sort((a,b)=>(b.date||'').localeCompare(a.date||'')).map(r=>
+    `<div class="item">
+      <div class="top"><span class="name">${esc(r.name)}</span><span class="amt">${yen(r.amount)}</span></div>
+      <div class="meta"><span>${r.date||'日付なし'}</span><button class="del" onclick="delRecord('${r.id}')">削除</button></div>
+    </div>`).join('');
+}
+
+/* ---------- 予定（配当スケジュール） ---------- */
+function renderSchedule(){
+  const sv = document.getElementById('view-schedule');
+  const sched = Array.from({length:12}, ()=>({total:0, names:[]}));
+  let unset = [];
+  db.holdings.forEach(h=>{
+    const m = (h.payMonths||[]);
+    if(!m.length){ if(annualGross(h)>0) unset.push(h.name); return; }
+    const per = afterTax(h)/m.length;
+    m.forEach(mm=>{ if(mm>=1&&mm<=12){ sched[mm-1].total+=per; sched[mm-1].names.push(h.name); } });
+  });
+  const annualTotal = sched.reduce((s,x)=>s+x.total,0);
+  const smax = Math.max(...sched.map(x=>x.total),1);
+
+  if(!db.holdings.length){
+    sv.innerHTML = `<div class="empty">保有資産を登録し、支払月を設定すると<br>「何月にいくら入るか」がここに表示されます。</div>`;
+    return;
+  }
+  let html = `<div class="sched-total">
+      <div class="label">年間 受取予定（税引後・支払月設定ぶん）</div>
+      <div class="value">${yen(annualTotal)}</div>
+    </div>`;
+  if(unset.length) html += `<div class="note">⚠ 支払月が未設定の資産があります：${esc(unset.join('、'))}<br>「保有」タブで編集はまだ無いので、削除→支払月つきで再登録すると予定に反映されます。</div>`;
+  html += sched.map((x,i)=>{
+    const names = [...new Set(x.names)].join('・');
+    return `<div class="srow ${x.total?'':'zero'}">
+      <span class="sm">${i+1}月</span>
+      <span class="sbar"><i style="width:${x.total/smax*100}%"></i></span>
+      <span class="sright"><span class="samt">${yen(x.total)}</span><span class="sn">${esc(names)||'—'}</span></span>
+    </div>`;
+  }).join('');
+  sv.innerHTML = html;
+}
+
 /* ---------- add/delete ---------- */
-function delHolding(id){ if(confirm('この銘柄を削除しますか？')){ db.holdings=db.holdings.filter(h=>h.id!==id); save(); } }
+function delHolding(id){ if(confirm('この資産を削除しますか？')){ db.holdings=db.holdings.filter(h=>h.id!==id); save(); } }
 function delRecord(id){ if(confirm('この記録を削除しますか？')){ db.records=db.records.filter(r=>r.id!==id); save(); } }
 
 /* ---------- sheet (add form) ---------- */
+function monthChips(){
+  return `<div class="chips" id="f_months">` +
+    Array.from({length:12},(_,i)=>`<div class="chip" onclick="toggleMonth(${i+1},this)">${i+1}月</div>`).join('') +
+    `</div>
+    <div class="presets">
+      <button onclick="presetMonths([6,12])">年2回(6・12月)</button>
+      <button onclick="presetMonths([3,6,9,12])">年4回</button>
+      <button onclick="presetMonths([1,2,3,4,5,6,7,8,9,10,11,12])">毎月</button>
+    </div>`;
+}
+function toggleMonth(m, el){
+  if(formMonths.has(m)){ formMonths.delete(m); el.classList.remove('active'); }
+  else { formMonths.add(m); el.classList.add('active'); }
+}
+function presetMonths(arr){
+  formMonths = new Set(arr);
+  document.querySelectorAll('#f_months .chip').forEach((el,i)=>el.classList.toggle('active', formMonths.has(i+1)));
+}
+function onTypeChange(){
+  const fund = document.getElementById('f_type').value==='fund';
+  document.getElementById('fields-stock').style.display = fund?'none':'block';
+  document.getElementById('fields-fund').style.display  = fund?'block':'none';
+}
+
 function openSheet(){
   const isHold = currentTab==='holdings';
   const today = new Date().toISOString().slice(0,10);
+  formMonths = new Set();
   const sheet = document.getElementById('sheet');
   sheet.innerHTML = isHold ? `
-    <h2>保有銘柄を追加</h2>
-    <label>銘柄名 *</label>
-    <input id="f_name" placeholder="例）三菱UFJ">
-    <label>口座区分 *</label>
-    <select id="f_account">
-      <option value="nisa">NISA（非課税）</option>
-      <option value="tax">特定・一般口座（課税）</option>
-    </select>
+    <h2>保有資産を追加</h2>
+    <label>名称 *</label>
+    <input id="f_name" placeholder="例）三菱UFJ／〇〇ファンド">
     <div class="row">
-      <div><label>証券コード</label><input id="f_code" inputmode="numeric" placeholder="8306"></div>
-      <div><label>保有株数 *</label><input id="f_shares" inputmode="numeric" placeholder="100"></div>
+      <div>
+        <label>資産種別 *</label>
+        <select id="f_type" onchange="onTypeChange()">
+          <option value="stock">株式・ETF</option>
+          <option value="fund">投資信託(ファンド)</option>
+        </select>
+      </div>
+      <div>
+        <label>口座区分 *</label>
+        <select id="f_account">
+          <option value="nisa">NISA（非課税）</option>
+          <option value="tax">特定・一般（課税）</option>
+        </select>
+      </div>
     </div>
-    <div class="row">
-      <div><label>1株あたり年間配当 *</label><input id="f_dps" inputmode="decimal" placeholder="60"></div>
-      <div><label>現在株価（利回り計算用）</label><input id="f_price" inputmode="decimal" placeholder="1800"></div>
+    <label>証券コード（任意）</label>
+    <input id="f_code" placeholder="8306 など">
+
+    <div id="fields-stock">
+      <div class="row">
+        <div><label>保有株数 *</label><input id="f_shares" inputmode="numeric" placeholder="100"></div>
+        <div><label>1株あたり年間配当 *</label><input id="f_dps" inputmode="decimal" placeholder="60"></div>
+      </div>
+      <label>現在株価（利回り計算用・任意）</label>
+      <input id="f_price" inputmode="decimal" placeholder="1800">
     </div>
+
+    <div id="fields-fund" style="display:none">
+      <div class="row">
+        <div><label>年間分配金（円）*</label><input id="f_dist" inputmode="numeric" placeholder="36000"></div>
+        <div><label>評価額（円・任意）</label><input id="f_value" inputmode="numeric" placeholder="1000000"></div>
+      </div>
+    </div>
+
+    <label>支払月（複数選択可）</label>
+    ${monthChips()}
+
     <div class="actions">
       <button class="btn ghost" onclick="closeSheet()">キャンセル</button>
       <button class="btn primary" onclick="addHolding()">追加</button>
@@ -286,9 +423,19 @@ function closeSheet(){ document.getElementById('overlay').classList.remove('show
 document.getElementById('overlay').addEventListener('click', e=>{ if(e.target.id==='overlay') closeSheet(); });
 
 function addHolding(){
-  const name = val('f_name'), shares = +val('f_shares'), dps = +val('f_dps');
-  if(!name || !shares || !dps){ alert('銘柄名・株数・1株配当は必須です'); return; }
-  db.holdings.push({id:uid(), name, account:val('f_account'), code:val('f_code'), shares, dps, price:+val('f_price')||0});
+  const name = val('f_name'), type = val('f_type');
+  if(!name){ alert('名称は必須です'); return; }
+  const base = {id:uid(), name, assetType:type, account:val('f_account'),
+                code:val('f_code'), payMonths:[...formMonths].sort((a,b)=>a-b)};
+  if(type==='fund'){
+    const dist = +val('f_dist');
+    if(!dist){ alert('年間分配金は必須です'); return; }
+    db.holdings.push({...base, annualDist:dist, value:+val('f_value')||0});
+  } else {
+    const shares = +val('f_shares'), dps = +val('f_dps');
+    if(!shares || !dps){ alert('株数・1株配当は必須です'); return; }
+    db.holdings.push({...base, shares, dps, price:+val('f_price')||0});
+  }
   closeSheet(); save();
 }
 function addRecord(){
@@ -297,7 +444,74 @@ function addRecord(){
   db.records.push({id:uid(), name, amount, date});
   closeSheet(); save();
 }
-const val = id => document.getElementById(id).value.trim();
+const val = id => { const el=document.getElementById(id); return el?el.value.trim():''; };
+
+/* ---------- 試算（配当再投資シミュレーション） ---------- */
+function renderSim(){
+  document.getElementById('view-sim').innerHTML = `
+    <div class="simcard">
+      <div style="display:flex;justify-content:space-between;align-items:center">
+        <strong style="font-size:15px">配当再投資シミュレーション</strong>
+        <button class="linkbtn" onclick="fillFromHoldings()">保有から取り込む</button>
+      </div>
+      <div class="row">
+        <div><label>初期投資額（円）</label><input id="m_init" inputmode="numeric" placeholder="1000000"></div>
+        <div><label>毎年の積立（円）</label><input id="m_add" inputmode="numeric" placeholder="0"></div>
+      </div>
+      <div class="row">
+        <div><label>想定 配当利回り（%/年）</label><input id="m_yield" inputmode="decimal" placeholder="4"></div>
+        <div><label>値上がり率（%/年）</label><input id="m_growth" inputmode="decimal" placeholder="0"></div>
+      </div>
+      <div class="row">
+        <div><label>期間（年）</label><input id="m_years" inputmode="numeric" placeholder="20"></div>
+        <div><label>配当を再投資</label>
+          <select id="m_reinvest"><option value="1">する</option><option value="0">しない</option></select>
+        </div>
+      </div>
+      <div class="actions"><button class="btn primary" onclick="runSim()">計算する</button></div>
+    </div>
+    <div id="sim-out"></div>`;
+}
+function fillFromHoldings(){
+  const totalVal = db.holdings.reduce((s,h)=>s+valueOf(h),0);
+  const totalDiv = db.holdings.reduce((s,h)=>s+annualGross(h),0);
+  document.getElementById('m_init').value = Math.round(totalVal) || '';
+  if(totalVal>0) document.getElementById('m_yield').value = (totalDiv/totalVal*100).toFixed(2);
+}
+function runSim(){
+  const init = +val('m_init')||0, add = +val('m_add')||0;
+  const y = (+val('m_yield')||0)/100, g = (+val('m_growth')||0)/100;
+  const years = Math.min(+val('m_years')||0, 60);
+  const reinvest = val('m_reinvest')==='1';
+  if(!init && !add){ alert('初期投資額か積立額を入力してください'); return; }
+  if(!years){ alert('期間（年）を入力してください'); return; }
+
+  let asset = init, cum = 0, rows = [];
+  for(let i=1;i<=years;i++){
+    asset += add;                 // 年初に積立
+    const div = asset * y;        // その年の配当
+    cum += div;
+    if(reinvest) asset += div;    // 再投資で翌年の元本に
+    asset *= (1+g);               // 値上がり
+    rows.push({i, asset, div, cum});
+  }
+  const last = rows[rows.length-1];
+  const invested = init + add*years;
+  document.getElementById('sim-out').innerHTML = `
+    <div class="simresult">
+      <div class="stat"><div class="label">${years}年後の資産</div><div class="value">${yen(last.asset)}</div></div>
+      <div class="stat"><div class="label">累計配当</div><div class="value">${yen(last.cum)}</div></div>
+      <div class="stat"><div class="label">元手（投資額合計）</div><div class="value">${yen(invested)}</div></div>
+      <div class="stat"><div class="label">増えた額</div><div class="value">${yen(last.asset-invested)}</div></div>
+    </div>
+    <div class="ytable"><table>
+      <tr><th>年</th><th>資産額</th><th>その年の配当</th><th>累計配当</th></tr>
+      ${rows.map(r=>`<tr><td>${r.i}年目</td><td>${yen(r.asset)}</td><td>${yen(r.div)}</td><td>${yen(r.cum)}</td></tr>`).join('')}
+    </table></div>
+    <div class="note" style="background:none;border:none;color:var(--sub);padding-left:0">
+      ※ 利回り・値上がり率が一定と仮定した概算です。税・手数料・価格変動は考慮していません。NISAなら配当非課税、課税口座なら手取りは約${((1-TAX)*100).toFixed(1)}%になります。
+    </div>`;
+}
 
 /* ---------- backup ---------- */
 function exportData(){
@@ -322,6 +536,7 @@ function importData(e){
 }
 
 /* ---------- init ---------- */
+renderSim();
 render();
 if('serviceWorker' in navigator){ navigator.serviceWorker.register('sw.js').catch(()=>{}); }
 </script>
