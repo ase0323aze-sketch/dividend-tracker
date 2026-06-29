@@ -198,6 +198,7 @@ const afterTax    = h => h.account==='nisa' ? annualGross(h) : annualGross(h)*(1
 /* ---------- state ---------- */
 let currentTab = 'holdings';
 let formMonths = new Set();     // 追加フォームで選択中の支払月
+let editId = null;              // 編集中のID（null=新規追加）
 const YEAR = new Date().getFullYear();
 document.getElementById('yearLabel').textContent = YEAR + '年';
 document.getElementById('sReceivedLabel').textContent = YEAR + '年の受取実績';
@@ -270,7 +271,10 @@ function renderHoldings(){
         <span class="amt">${yen(annual)}/年</span>
       </div>
       <div class="meta"><span>${detail}</span><span>${pm}</span></div>
-      <div class="meta"><span></span><button class="del" onclick="delHolding('${h.id}')">削除</button></div>
+      <div class="meta"><span></span><span>
+        <button class="del" style="color:var(--accent)" onclick="openSheet('${h.id}')">編集</button>
+        <button class="del" onclick="delHolding('${h.id}')">削除</button>
+      </span></div>
     </div>`;
   }).join('');
 }
@@ -284,7 +288,10 @@ function renderRecords(){
   rv.innerHTML = db.records.slice().sort((a,b)=>(b.date||'').localeCompare(a.date||'')).map(r=>
     `<div class="item">
       <div class="top"><span class="name">${esc(r.name)}</span><span class="amt">${yen(r.amount)}</span></div>
-      <div class="meta"><span>${r.date||'日付なし'}</span><button class="del" onclick="delRecord('${r.id}')">削除</button></div>
+      <div class="meta"><span>${r.date||'日付なし'}</span><span>
+        <button class="del" style="color:var(--accent)" onclick="openSheet('${r.id}')">編集</button>
+        <button class="del" onclick="delRecord('${r.id}')">削除</button>
+      </span></div>
     </div>`).join('');
 }
 
@@ -329,7 +336,7 @@ function delRecord(id){ if(confirm('この記録を削除しますか？')){ db.
 /* ---------- sheet (add form) ---------- */
 function monthChips(){
   return `<div class="chips" id="f_months">` +
-    Array.from({length:12},(_,i)=>`<div class="chip" onclick="toggleMonth(${i+1},this)">${i+1}月</div>`).join('') +
+    Array.from({length:12},(_,i)=>`<div class="chip ${formMonths.has(i+1)?'active':''}" onclick="toggleMonth(${i+1},this)">${i+1}月</div>`).join('') +
     `</div>
     <div class="presets">
       <button onclick="presetMonths([6,12])">年2回(6・12月)</button>
@@ -351,47 +358,55 @@ function onTypeChange(){
   document.getElementById('fields-fund').style.display  = fund?'block':'none';
 }
 
-function openSheet(){
+function openSheet(id){
   const isHold = currentTab==='holdings';
+  editId = (typeof id==='string') ? id : null;   // 文字列IDなら編集、なければ新規
   const today = new Date().toISOString().slice(0,10);
-  formMonths = new Set();
+  let h = {};
+  if(editId){
+    const src = isHold ? db.holdings : db.records;
+    h = src.find(x=>x.id===editId) || {};
+  }
+  formMonths = new Set(h.payMonths||[]);
+  const a = s => s===undefined||s===null ? '' : esc(String(s));     // 属性用
+  const sel = (x,y) => x===y ? 'selected' : '';
   const sheet = document.getElementById('sheet');
   sheet.innerHTML = isHold ? `
-    <h2>保有資産を追加</h2>
+    <h2>${editId?'保有資産を編集':'保有資産を追加'}</h2>
     <label>名称 *</label>
-    <input id="f_name" placeholder="例）三菱UFJ／〇〇ファンド">
+    <input id="f_name" placeholder="例）三菱UFJ／〇〇ファンド" value="${a(h.name)}">
     <div class="row">
       <div>
         <label>資産種別 *</label>
         <select id="f_type" onchange="onTypeChange()">
-          <option value="stock">株式・ETF</option>
-          <option value="fund">投資信託(ファンド)</option>
+          <option value="stock" ${sel(h.assetType||'stock','stock')}>株式・ETF</option>
+          <option value="fund" ${sel(h.assetType,'fund')}>投資信託(ファンド)</option>
         </select>
       </div>
       <div>
         <label>口座区分 *</label>
         <select id="f_account">
-          <option value="nisa">NISA（非課税）</option>
-          <option value="tax">特定・一般（課税）</option>
+          <option value="nisa" ${sel(h.account,'nisa')}>NISA（非課税）</option>
+          <option value="tax" ${sel(h.account||'tax','tax')}>特定・一般（課税）</option>
         </select>
       </div>
     </div>
     <label>証券コード（任意）</label>
-    <input id="f_code" placeholder="8306 など">
+    <input id="f_code" placeholder="8306 など" value="${a(h.code)}">
 
     <div id="fields-stock">
       <div class="row">
-        <div><label>保有株数 *</label><input id="f_shares" inputmode="numeric" placeholder="100"></div>
-        <div><label>1株あたり年間配当 *</label><input id="f_dps" inputmode="decimal" placeholder="60"></div>
+        <div><label>保有株数 *</label><input id="f_shares" inputmode="numeric" placeholder="100" value="${a(h.shares)}"></div>
+        <div><label>1株あたり年間配当 *</label><input id="f_dps" inputmode="decimal" placeholder="60" value="${a(h.dps)}"></div>
       </div>
       <label>現在株価（利回り計算用・任意）</label>
-      <input id="f_price" inputmode="decimal" placeholder="1800">
+      <input id="f_price" inputmode="decimal" placeholder="1800" value="${a(h.price)}">
     </div>
 
     <div id="fields-fund" style="display:none">
       <div class="row">
-        <div><label>年間分配金（円）*</label><input id="f_dist" inputmode="numeric" placeholder="36000"></div>
-        <div><label>評価額（円・任意）</label><input id="f_value" inputmode="numeric" placeholder="1000000"></div>
+        <div><label>年間分配金（円）*</label><input id="f_dist" inputmode="numeric" placeholder="36000" value="${a(h.annualDist)}"></div>
+        <div><label>評価額（円・任意）</label><input id="f_value" inputmode="numeric" placeholder="1000000" value="${a(h.value)}"></div>
       </div>
     </div>
 
@@ -400,48 +415,60 @@ function openSheet(){
 
     <div class="actions">
       <button class="btn ghost" onclick="closeSheet()">キャンセル</button>
-      <button class="btn primary" onclick="addHolding()">追加</button>
+      <button class="btn primary" onclick="addHolding()">${editId?'保存':'追加'}</button>
     </div>
   ` : `
-    <h2>配当の受取を記録</h2>
+    <h2>${editId?'受取記録を編集':'配当の受取を記録'}</h2>
     <label>銘柄名 *</label>
-    <input id="f_name" list="holdNames" placeholder="例）三菱UFJ">
-    <datalist id="holdNames">${db.holdings.map(h=>`<option value="${esc(h.name)}">`).join('')}</datalist>
+    <input id="f_name" list="holdNames" placeholder="例）三菱UFJ" value="${a(h.name)}">
+    <datalist id="holdNames">${db.holdings.map(x=>`<option value="${esc(x.name)}">`).join('')}</datalist>
     <div class="row">
-      <div><label>受取額（円）*</label><input id="f_amount" inputmode="numeric" placeholder="4800"></div>
-      <div><label>受取日 *</label><input id="f_date" type="date" value="${today}"></div>
+      <div><label>受取額（円）*</label><input id="f_amount" inputmode="numeric" placeholder="4800" value="${a(h.amount)}"></div>
+      <div><label>受取日 *</label><input id="f_date" type="date" value="${a(h.date)||today}"></div>
     </div>
     <div class="actions">
       <button class="btn ghost" onclick="closeSheet()">キャンセル</button>
-      <button class="btn primary" onclick="addRecord()">記録</button>
+      <button class="btn primary" onclick="addRecord()">${editId?'保存':'記録'}</button>
     </div>
   `;
+  if(isHold) onTypeChange();
   document.getElementById('overlay').classList.add('show');
   setTimeout(()=>document.getElementById('f_name').focus(),100);
 }
-function closeSheet(){ document.getElementById('overlay').classList.remove('show'); }
+function closeSheet(){ editId=null; document.getElementById('overlay').classList.remove('show'); }
 document.getElementById('overlay').addEventListener('click', e=>{ if(e.target.id==='overlay') closeSheet(); });
 
 function addHolding(){
   const name = val('f_name'), type = val('f_type');
   if(!name){ alert('名称は必須です'); return; }
-  const base = {id:uid(), name, assetType:type, account:val('f_account'),
-                code:val('f_code'), payMonths:[...formMonths].sort((a,b)=>a-b)};
+  let obj = {name, assetType:type, account:val('f_account'),
+             code:val('f_code'), payMonths:[...formMonths].sort((a,b)=>a-b)};
   if(type==='fund'){
     const dist = +val('f_dist');
     if(!dist){ alert('年間分配金は必須です'); return; }
-    db.holdings.push({...base, annualDist:dist, value:+val('f_value')||0});
+    obj = {...obj, annualDist:dist, value:+val('f_value')||0, shares:undefined, dps:undefined, price:undefined};
   } else {
     const shares = +val('f_shares'), dps = +val('f_dps');
     if(!shares || !dps){ alert('株数・1株配当は必須です'); return; }
-    db.holdings.push({...base, shares, dps, price:+val('f_price')||0});
+    obj = {...obj, shares, dps, price:+val('f_price')||0, annualDist:undefined, value:undefined};
+  }
+  if(editId){
+    const i = db.holdings.findIndex(x=>x.id===editId);
+    if(i>=0) db.holdings[i] = {...db.holdings[i], ...obj, id:editId};
+  } else {
+    db.holdings.push({...obj, id:uid()});
   }
   closeSheet(); save();
 }
 function addRecord(){
   const name = val('f_name'), amount = +val('f_amount'), date = val('f_date');
   if(!name || !amount || !date){ alert('銘柄名・受取額・受取日は必須です'); return; }
-  db.records.push({id:uid(), name, amount, date});
+  if(editId){
+    const i = db.records.findIndex(x=>x.id===editId);
+    if(i>=0) db.records[i] = {...db.records[i], name, amount, date};
+  } else {
+    db.records.push({id:uid(), name, amount, date});
+  }
   closeSheet(); save();
 }
 const val = id => { const el=document.getElementById(id); return el?el.value.trim():''; };
